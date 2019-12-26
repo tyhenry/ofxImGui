@@ -37,7 +37,7 @@
 #include "ofVectorMath.h"
 #include "ofColor.h"
 
-#if OF_VERSION_MINOR >= 10
+#if OF_VERSION_MAJOR >= 1 || OF_VERSION_MINOR >= 10
 #define IM_VEC2_CLASS_EXTRA							\
 ImVec2(const ofVec2f& f) { x = f.x; y = f.y; }		\
 operator ofVec2f() const { return ofVec2f(x, y); }	\
@@ -49,7 +49,7 @@ ImVec2(const ofVec2f& f) { x = f.x; y = f.y; }		\
 operator ofVec2f() const { return ofVec2f(x, y); }
 #endif
 
-#if OF_VERSION_MINOR >= 10
+#if OF_VERSION_MAJOR >= 1 || OF_VERSION_MINOR >= 10
 #define IM_VEC4_CLASS_EXTRA																													\
 ImVec4(const ofVec4f& f) { x = f.x; y = f.y; z = f.z; w = f.w; }																			\
 operator ofVec4f() const { return ofVec4f(x,y,z,w); }																						\
