@@ -61,7 +61,7 @@ namespace ofxImGui
 
 	void AddGroup(ofParameterGroup& group, Settings& settings);
 
-#if OF_VERSION_MINOR >= 10
+#if OF_VERSION_MAJOR >= 1 || OF_VERSION_MINOR >= 10
 	bool AddParameter(ofParameter<glm::ivec2>& parameter);
 	bool AddParameter(ofParameter<glm::ivec3>& parameter);
 	bool AddParameter(ofParameter<glm::ivec4>& parameter);
@@ -90,13 +90,13 @@ namespace ofxImGui
 
 	bool AddRange(const std::string& name, ofParameter<int>& parameterMin, ofParameter<int>& parameterMax, int speed = 1);
 	bool AddRange(const std::string& name, ofParameter<float>& parameterMin, ofParameter<float>& parameterMax, float speed = 0.01f);
-#if OF_VERSION_MINOR >= 10
+#if OF_VERSION_MAJOR >= 1 || OF_VERSION_MINOR >= 10
 	bool AddRange(const std::string& name, ofParameter<glm::vec2>& parameterMin, ofParameter<glm::vec2>& parameterMax, float speed = 0.01f);
 	bool AddRange(const std::string& name, ofParameter<glm::vec3>& parameterMin, ofParameter<glm::vec3>& parameterMax, float speed = 0.01f);
 	bool AddRange(const std::string& name, ofParameter<glm::vec4>& parameterMin, ofParameter<glm::vec4>& parameterMax, float speed = 0.01f);
 #endif
 
-#if OF_VERSION_MINOR >= 10
+#if OF_VERSION_MAJOR >= 1 || OF_VERSION_MINOR >= 10
 	bool AddValues(const std::string& name, std::vector<glm::ivec2>& values, int minValue, int maxValue);
 	bool AddValues(const std::string& name, std::vector<glm::ivec3>& values, int minValue, int maxValue);
 	bool AddValues(const std::string& name, std::vector<glm::ivec4>& values, int minValue, int maxValue);

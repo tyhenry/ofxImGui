@@ -204,7 +204,7 @@ void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
 		}
 
 		// Parameter, try everything we know how to handle.
-#if OF_VERSION_MINOR >= 10
+#if OF_VERSION_MAJOR >= 1 || OF_VERSION_MINOR >= 10
 		auto parameterVec2f = std::dynamic_pointer_cast<ofParameter<glm::vec2>>(parameter);
 		if (parameterVec2f)
 		{
