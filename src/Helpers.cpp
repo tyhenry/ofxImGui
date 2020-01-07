@@ -266,6 +266,12 @@ void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
 			ofxImGui::AddParameter(*parameterBool);
 			continue;
 		}
+		auto parameterString = std::dynamic_pointer_cast<ofParameter<std::string>>(parameter);
+		if (parameterString)
+		{
+			ofxImGui::AddParameter(*parameterString);
+			continue;
+		}
 
 		ofLogWarning(__FUNCTION__) << "Could not create GUI element for parameter " << parameter->getName();
 	}
