@@ -173,7 +173,7 @@ void ofxImGui::EndTree(Settings& settings)
 }
 
 //--------------------------------------------------------------
-void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
+void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings, ofxImGui::CustomParamFn customParamFn )
 {
 	bool prevWindowBlock = settings.windowBlock;
 	if (settings.windowBlock)
@@ -271,6 +271,18 @@ void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
 		{
 			ofxImGui::AddParameter(*parameterString);
 			continue;
+		}
+
+		// use function ptr for custom parameter types
+		if (customParamFn) {
+			bool success = false;
+			try {
+				success = customParamFn(parameter);
+			}
+			catch (...) {
+				// log?
+			}
+			if (success) continue;
 		}
 
 		ofLogWarning(__FUNCTION__) << "Could not create GUI element for parameter " << parameter->getName();
@@ -769,17 +781,17 @@ static auto vector_getter = [](void* vec, int idx, const char** out_text)
     return true;
 };
 
-bool ofxImGui::VectorCombo(const char* label, int* currIndex, std::vector<std::string>& values)
+bool ofxImGui::VectorCombo(const char* label, int* currIndex, const std::vector<std::string>& values)
 {
-    if (values.empty()) { return false; }
-    return ImGui::Combo(label, currIndex, vector_getter,
-                        static_cast<void*>(&values), values.size());
+	if (values.empty()) { return false; }
+	return ImGui::Combo(label, currIndex, vector_getter,
+		static_cast<void*>(const_cast<std::vector<std::string>*>(&values)), values.size());
 }
 
-bool ofxImGui::VectorListBox(const char* label, int* currIndex, std::vector<std::string>& values)
+bool ofxImGui::VectorListBox(const char* label, int* currIndex, const std::vector<std::string>& values)
 {
-    if (values.empty()) { return false; }
-    return ImGui::ListBox(label, currIndex, vector_getter,
-                   static_cast<void*>(&values), values.size());
+	if (values.empty()) { return false; }
+	return ImGui::ListBox(label, currIndex, vector_getter,
+		static_cast<void*>(const_cast<std::vector<std::string>*>(&values)), values.size());
 }
 

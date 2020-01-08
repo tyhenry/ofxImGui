@@ -15,8 +15,8 @@ static const int kImGuiMargin = 10;
 namespace ofxImGui
 {
     
-    bool VectorCombo(const char* label, int* currIndex, std::vector<std::string>& values);
-    bool VectorListBox(const char* label, int* currIndex, std::vector<std::string>& values);
+    bool VectorCombo(const char* label, int* currIndex, const std::vector<std::string>& values);
+    bool VectorListBox(const char* label, int* currIndex, const std::vector<std::string>& values);
 
     
 	struct WindowOpen
@@ -59,7 +59,8 @@ namespace ofxImGui
 	bool BeginTree(const std::string& name, Settings& settings);
 	void EndTree(Settings& settings);
 
-	void AddGroup(ofParameterGroup& group, Settings& settings);
+	using CustomParamFn = std::function<bool(std::shared_ptr<ofAbstractParameter>)>;
+	void AddGroup(ofParameterGroup& group, Settings& settings, CustomParamFn customParamFn = nullptr);
 
 #if OF_VERSION_MAJOR >= 1 || OF_VERSION_MINOR >= 10
 	bool AddParameter(ofParameter<glm::ivec2>& parameter);
