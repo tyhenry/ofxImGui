@@ -16,9 +16,11 @@ namespace ofxImGui
 {
     
     bool VectorCombo(const char* label, int* currIndex, const std::vector<std::string>& values);
-    bool VectorListBox(const char* label, int* currIndex, const std::vector<std::string>& values);
+	bool VectorCombo(const std::string& label, int* currIndex, const std::vector<std::string>& values);
 
-    
+    bool VectorListBox(const char* label, int* currIndex, const std::vector<std::string>& values);
+	bool VectorListBox(const std::string& label, int* currIndex, const std::vector<std::string>& values);
+
 	struct WindowOpen
 	{
 		std::stack<std::vector<std::string>> usedNames;

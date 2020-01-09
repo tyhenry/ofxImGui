@@ -787,11 +787,23 @@ bool ofxImGui::VectorCombo(const char* label, int* currIndex, const std::vector<
 	return ImGui::Combo(label, currIndex, vector_getter,
 		static_cast<void*>(const_cast<std::vector<std::string>*>(&values)), values.size());
 }
+bool ofxImGui::VectorCombo(const std::string& label, int* currIndex, const std::vector<std::string>& values)
+{
+	if (values.empty()) { return false; }
+	return ImGui::Combo(label.c_str(), currIndex, vector_getter,
+		static_cast<void*>(const_cast<std::vector<std::string>*>(&values)), values.size());
+}
 
 bool ofxImGui::VectorListBox(const char* label, int* currIndex, const std::vector<std::string>& values)
 {
 	if (values.empty()) { return false; }
 	return ImGui::ListBox(label, currIndex, vector_getter,
+		static_cast<void*>(const_cast<std::vector<std::string>*>(&values)), values.size());
+}
+bool ofxImGui::VectorListBox(const std::string & label, int * currIndex, const std::vector<std::string>& values)
+{
+	if (values.empty()) { return false; }
+	return ImGui::ListBox(label.c_str(), currIndex, vector_getter,
 		static_cast<void*>(const_cast<std::vector<std::string>*>(&values)), values.size());
 }
 
