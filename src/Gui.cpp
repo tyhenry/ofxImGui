@@ -67,6 +67,13 @@ namespace ofxImGui
 		ImGui::DestroyContext();
 	}
 
+	ImFont* Gui::loadFont(const std::string& fontPath, int size)
+	{
+		auto font = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.c_str(), size);
+		engine.createFontsTexture();	// reset fonts texture
+		return font;
+	}
+
 	//--------------------------------------------------------------
 	void Gui::setTheme(BaseTheme* theme_)
 	{

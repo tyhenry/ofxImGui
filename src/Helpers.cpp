@@ -90,7 +90,7 @@ bool ofxImGui::BeginWindow( const std::string& name, Settings& settings, ImGuiWi
 
 	ImGui::SetNextWindowPos( settings.windowPos, settings.lockPosition ? ImGuiCond_Always : ImGuiCond_Appearing );
 	ImGui::SetNextWindowSize( settings.windowSize, ImGuiCond_Appearing );
-	ImGui::SetNextWindowCollapsed( !( flags & ImGuiWindowFlags_NoCollapse ), ImGuiCond_Appearing );
+	//ImGui::SetNextWindowCollapsed( !( flags & ImGuiWindowFlags_NoCollapse ), ImGuiCond_Appearing );
 	return ImGui::Begin( name.c_str(), open, flags );
 }
 
