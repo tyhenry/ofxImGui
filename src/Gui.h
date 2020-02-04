@@ -30,7 +30,8 @@ namespace ofxImGui
 
 		void draw();
 
-		ImFont* loadFont( const std::string& fontPath, int size );
+		ImFont* loadFont( const std::string& fontPath, int size, bool setAsDefault );
+		bool setFont(ImFont * font);
 		void setTheme(BaseTheme* theme);
 
 		GLuint loadImage(ofImage& image);

@@ -67,11 +67,27 @@ namespace ofxImGui
 		ImGui::DestroyContext();
 	}
 
-	ImFont* Gui::loadFont(const std::string& fontPath, int size)
+	//--------------------------------------------------------------
+	// this should be called after Gui::setup() but outside of ImGui Begin() / End()
+	ImFont* Gui::loadFont(const std::string& fontPath, int size, bool setAsDefault)
 	{
 		auto font = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.c_str(), size);
-		engine.createFontsTexture();	// reset fonts texture
+		engine.createFontsTexture();	// rebuild fonts texture
+		if (font && font->IsLoaded() && setAsDefault) {
+			ImGui::GetIO().FontDefault = font;
+		}
 		return font;
+	}
+
+	//--------------------------------------------------------------
+	// this can be called inside of ImGui Begin() / End() to change fonts at run time
+	bool Gui::setFont( ImFont* font )
+	{
+		if (font && font->IsLoaded()) {
+			ImGui::GetIO().FontDefault = font;
+			return true;
+		}
+		return false;
 	}
 
 	//--------------------------------------------------------------
