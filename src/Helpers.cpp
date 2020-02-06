@@ -677,16 +677,58 @@ bool ofxImGui::AddValues( const std::string& name, std::vector<ofVec4f>& values,
 }
 
 //--------------------------------------------------------------
-void ofxImGui::AddImage( const ofBaseHasTexture& hasTexture, const ofVec2f& size )
+bool ofxImGui::AddImage( const ofBaseHasTexture& hasTexture, const ofVec2f& size )
 {
 	ofxImGui::AddImage( hasTexture.getTexture(), size );
+	return ImGui::IsItemClicked();
 }
 
 //--------------------------------------------------------------
-void ofxImGui::AddImage( const ofTexture& texture, const ofVec2f& size )
+bool ofxImGui::AddImage( const ofTexture& texture, const ofVec2f& size )
 {
 	ImTextureID textureID = GetImTextureID( texture );
 	ImGui::Image( textureID, size );
+	return ImGui::IsItemClicked();
+}
+
+//--------------------------------------------------------------
+// this should be called right after ofxImGui::AddImage()
+void ofxImGui::ImageTooltip( const ofTexture& texture, const std::string& text, const ofVec2f& peekSize, const float peekScale )
+{
+	auto guiPos             = ImGui::GetCursorScreenPos();
+	auto imgSize            = ImGui::GetItemRectSize();
+	auto imgMin             = glm::vec2( guiPos.x, guiPos.y - imgSize.y );
+	auto imgMax             = imgMin + glm::vec2( imgSize.x, imgSize.y );
+	glm::vec2 mousePos      = { ofGetMouseX(), ofGetMouseY() };
+	glm::vec2 mouseHoverPct = ( mousePos - imgMin ) / ( imgMax - imgMin );
+
+	ImGui::BeginTooltip();
+
+	// print texture data
+	glm::vec2 texDims{ texture.getWidth(), texture.getHeight() };
+	ImTextureID texId = GetImTextureID( texture.texData.textureID );
+
+	if ( !text.empty() ) {
+		ImGui::TextWrapped( text.c_str() );
+	}
+	std::stringstream ss;
+	ss << "texture id: " << texture.texData.textureID << std::endl
+	   << "dims: " << texDims;
+	ImGui::TextWrapped( ss.str().c_str() );
+
+	ofRectangle imgRegion(
+	    texDims.x * mouseHoverPct.x - peekSize.x * .5,
+	    texDims.y * mouseHoverPct.y - peekSize.y * .5,
+	    peekSize.x, peekSize.y );
+	imgRegion.x = std::max( 0.f, std::min( texDims.x - peekSize.x, imgRegion.x ) );
+	imgRegion.y = std::max( 0.f, std::min( texDims.y - peekSize.y, imgRegion.y ) );
+
+	ImVec2 uv0 = ImVec2( imgRegion.x / texDims.x, imgRegion.y / texDims.y );
+	ImVec2 uv1 = ImVec2( imgRegion.getRight() / texDims.x, imgRegion.getBottom() / texDims.y );
+
+	ImGui::Image( texId, ImVec2( peekSize.x, peekSize.y ), uv0, uv1, ImVec4( 1.0f, 1.0f, 1.0f, 1.0f ), ImVec4( 1.0f, 1.0f, 1.0f, 0.5f ) );
+
+	ImGui::EndTooltip();
 }
 
 static auto vector_getter = []( void* vec, int idx, const char** out_text ) {
