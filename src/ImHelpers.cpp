@@ -7,7 +7,7 @@ ofxImGui::Settings::Settings()
 	, lockPosition(false)
 	, windowBlock(false)
 	, mouseOverGui(false)
-    , treeLevel(0)
+	, treeLevel(0)
 {}
 
 bool ofxImGui::IsMouseOverGui()
@@ -16,13 +16,13 @@ bool ofxImGui::IsMouseOverGui()
 }
 
 //--------------------------------------------------------------
-const char * ofxImGui::GetUniqueName(ofAbstractParameter& parameter)
+const char* ofxImGui::GetUniqueName(ofAbstractParameter& parameter)
 {
 	return GetUniqueName(parameter.getName());
 }
 
 //--------------------------------------------------------------
-const char * ofxImGui::GetUniqueName(const std::string& candidate)
+const char* ofxImGui::GetUniqueName(const std::string& candidate)
 {
 	std::string result = candidate;
 	while (std::find(windowOpen.usedNames.top().begin(), windowOpen.usedNames.top().end(), result) != windowOpen.usedNames.top().end())
@@ -59,7 +59,7 @@ bool ofxImGui::BeginWindow(ofParameter<bool>& parameter, Settings& settings, boo
 }
 
 //--------------------------------------------------------------
-bool ofxImGui::BeginWindow(const std::string& name, Settings& settings, bool collapse, bool * open)
+bool ofxImGui::BeginWindow(const std::string& name, Settings& settings, bool collapse, bool* open)
 {
 	if (settings.windowBlock)
 	{
@@ -72,14 +72,14 @@ bool ofxImGui::BeginWindow(const std::string& name, Settings& settings, bool col
 	// Push a new list of names onto the stack.
 	windowOpen.usedNames.push(std::vector<std::string>());
 
-	ImGui::SetNextWindowPos(settings.windowPos, settings.lockPosition? ImGuiCond_Always : ImGuiCond_Appearing);
+	ImGui::SetNextWindowPos(settings.windowPos, settings.lockPosition ? ImGuiCond_Always : ImGuiCond_Appearing);
 	ImGui::SetNextWindowSize(settings.windowSize, ImGuiCond_Appearing);
 	//ImGui::SetNextWindowCollapsed(collapse, ImGuiCond_Appearing);
-	return ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | (collapse ? 0 : ImGuiWindowFlags_NoCollapse));
+	return ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_NoSavedSettings /*| ImGuiWindowFlags_AlwaysAutoResize*/ | (collapse ? 0 : ImGuiWindowFlags_NoCollapse));
 }
 
 //--------------------------------------------------------------
-bool ofxImGui::BeginWindow(const std::string& name, Settings& settings, ImGuiWindowFlags flags, bool * open)
+bool ofxImGui::BeginWindow(const std::string& name, Settings& settings, ImGuiWindowFlags flags, bool* open)
 {
 	if (settings.windowBlock)
 	{
@@ -92,7 +92,7 @@ bool ofxImGui::BeginWindow(const std::string& name, Settings& settings, ImGuiWin
 	// Push a new list of names onto the stack.
 	windowOpen.usedNames.push(std::vector<std::string>());
 
-	ImGui::SetNextWindowPos(settings.windowPos, settings.lockPosition? ImGuiCond_Always : ImGuiCond_Appearing);
+	ImGui::SetNextWindowPos(settings.windowPos, settings.lockPosition ? ImGuiCond_Always : ImGuiCond_Appearing);
 	ImGui::SetNextWindowSize(settings.windowSize, ImGuiCond_Appearing);
 	ImGui::SetNextWindowCollapsed(!(flags & ImGuiWindowFlags_NoCollapse), ImGuiCond_Appearing);
 	return ImGui::Begin(name.c_str(), open, flags);
@@ -111,7 +111,7 @@ void ofxImGui::EndWindow(Settings& settings)
 
 	settings.windowPos = ImGui::GetWindowPos();
 	settings.windowSize = ImGui::GetWindowSize();
-	settings.mouseOverGui |= ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+	settings.mouseOverGui = ImGui::IsWindowHovered();	// ImGuiHoveredFlags_AnyWindow);
 	ImGui::End();
 
 	// Unlink the referenced ofParameter.
@@ -142,7 +142,7 @@ bool ofxImGui::BeginTree(ofAbstractParameter& parameter, Settings& settings)
 bool ofxImGui::BeginTree(const std::string& name, Settings& settings)
 {
 	bool result;
-    ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Appearing);
+	//ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Appearing);
 	if (settings.treeLevel == 0)
 	{
 		result = ImGui::TreeNodeEx(GetUniqueName(name), ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoAutoOpenOnLog);
@@ -165,7 +165,7 @@ bool ofxImGui::BeginTree(const std::string& name, Settings& settings)
 void ofxImGui::EndTree(Settings& settings)
 {
 	ImGui::TreePop();
-	
+
 	settings.treeLevel = std::max(0, settings.treeLevel - 1);
 
 	// Clear the list of names from the stack.
@@ -173,7 +173,7 @@ void ofxImGui::EndTree(Settings& settings)
 }
 
 //--------------------------------------------------------------
-void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
+void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings, std::function<bool(std::shared_ptr<ofAbstractParameter>)> customParamCallback)
 {
 	bool prevWindowBlock = settings.windowBlock;
 	if (settings.windowBlock)
@@ -199,12 +199,27 @@ void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
 		if (parameterGroup)
 		{
 			// Recurse through contents.
-			ofxImGui::AddGroup(*parameterGroup, settings);
+			ofxImGui::AddGroup(*parameterGroup, settings, customParamCallback);
 			continue;
 		}
 
 		// Parameter, try everything we know how to handle.
-#if OF_VERSION_MINOR >= 10
+
+		// Custom parameter types can use callback function - call it first.
+		if (customParamCallback) {
+			bool success = false;
+			try {
+				success = customParamCallback(parameter);
+			}
+			catch (const std::exception& e) {
+				ofLogError(__FUNCTION__) << "Error creating GUI element for custom parameter type <" << parameter->valueType() << ">, exception: " << e.what();
+			}
+			if (success) continue;
+		}
+
+		// Try the default ofxImGui::AddParameter() methods.
+#if OFXIMGUI_GLM
+
 		auto parameterVec2f = std::dynamic_pointer_cast<ofParameter<glm::vec2>>(parameter);
 		if (parameterVec2f)
 		{
@@ -224,6 +239,7 @@ void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
 			continue;
 		}
 #endif
+
 		auto parameterOfVec2f = std::dynamic_pointer_cast<ofParameter<ofVec2f>>(parameter);
 		if (parameterOfVec2f)
 		{
@@ -266,8 +282,19 @@ void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
 			ofxImGui::AddParameter(*parameterBool);
 			continue;
 		}
+		auto parameterString = std::dynamic_pointer_cast<ofParameter<std::string>>(parameter);
+		if (parameterString) {
+			ofxImGui::AddParameter(*parameterString);
+			continue;
+		}
 
-		ofLogWarning(__FUNCTION__) << "Could not create GUI element for parameter " << parameter->getName();
+		//ofLogWarning(__FUNCTION__) << "Could not create GUI element for parameter " << parameter->getName();
+
+		// display a notice in GUI that parameter type isn't handled
+		std::stringstream ss;
+		ss << "[" << parameter->getName() << "] No GUI element for ofParameter<" << parameter->valueType() << ">";
+			// << parameter->toString(); // try to stringify or get value?
+		ImGui::TextWrapped(ss.str().c_str());
 	}
 
 	if (settings.windowBlock && !prevWindowBlock)
@@ -282,7 +309,7 @@ void ofxImGui::AddGroup(ofParameterGroup& group, Settings& settings)
 	}
 }
 
-#if OF_VERSION_MINOR >= 10
+#if OFXIMGUI_GLM
 
 //--------------------------------------------------------------
 bool ofxImGui::AddParameter(ofParameter<glm::tvec2<int>>& parameter)
@@ -418,7 +445,7 @@ bool ofxImGui::AddParameter(ofParameter<ofFloatColor>& parameter, bool alpha)
 bool ofxImGui::AddParameter(ofParameter<std::string>& parameter, size_t maxChars, bool multiline)
 {
 	auto tmpRef = parameter.get();
-	char * cString = new char[maxChars];
+	char* cString = new char[maxChars];
 	strcpy(cString, tmpRef.c_str());
 	auto result = false;
 	if (multiline)
@@ -453,7 +480,7 @@ bool ofxImGui::AddParameter(ofParameter<void>& parameter, float width)
 bool ofxImGui::AddRadio(ofParameter<int>& parameter, std::vector<std::string> labels, int columns)
 {
 	auto uniqueName = GetUniqueName(parameter);
-    ImGui::Text("%s", uniqueName);
+	ImGui::Text("%s", uniqueName);
 	auto result = false;
 	auto tmpRef = parameter.get();
 	ImGui::PushID(uniqueName);
@@ -556,7 +583,7 @@ bool ofxImGui::AddRange(const std::string& name, ofParameter<float>& parameterMi
 	return false;
 }
 
-#if OF_VERSION_MINOR >= 10
+#if OFXIMGUI_GLM
 
 //--------------------------------------------------------------
 bool ofxImGui::AddRange(const std::string& name, ofParameter<glm::vec2>& parameterMin, ofParameter<glm::vec2>& parameterMax, float speed)
@@ -641,7 +668,7 @@ bool ofxImGui::AddRange(const std::string& name, ofParameter<glm::vec4>& paramet
 
 #endif
 
-#if OF_VERSION_MINOR >= 10
+#if OFXIMGUI_GLM
 
 //--------------------------------------------------------------
 bool ofxImGui::AddValues(const std::string& name, std::vector<glm::tvec2<int>>& values, int minValue, int maxValue)
@@ -817,54 +844,91 @@ bool ofxImGui::AddValues(const std::string& name, std::vector<ofVec4f>& values, 
 }
 
 //--------------------------------------------------------------
-void ofxImGui::AddImage(const ofBaseHasTexture& hasTexture, const ofVec2f& size)
+bool ofxImGui::AddImage(const ofBaseHasTexture& hasTexture, const ofDefaultVec2& size)
 {
 	ofxImGui::AddImage(hasTexture.getTexture(), size);
+	return ImGui::IsItemClicked();
 }
 
 //--------------------------------------------------------------
-void ofxImGui::AddImage(const ofTexture& texture, const ofVec2f& size)
+bool ofxImGui::AddImage(const ofTexture& texture, const ofDefaultVec2& size)
 {
 	ImTextureID textureID = GetImTextureID(texture);
 	ImGui::Image(textureID, size);
-}
-
-#if OF_VERSION_MINOR >= 10
-
-//--------------------------------------------------------------
-void ofxImGui::AddImage(const ofBaseHasTexture& hasTexture, const glm::vec2& size)
-{
-    ofxImGui::AddImage(hasTexture.getTexture(), size);
+	return ImGui::IsItemClicked();
 }
 
 //--------------------------------------------------------------
-void ofxImGui::AddImage(const ofTexture& texture, const glm::vec2& size)
+// this should be called right after ofxImGui::AddImage()
+void ofxImGui::AddImageTooltip(const ofTexture& texture, const std::string& text, const ofDefaultVec2& peekSize, float peekScale)
 {
-    ImTextureID textureID = GetImTextureID(texture);
-    ImGui::Image(textureID, size);
-}
+	auto guiPos = ImGui::GetCursorScreenPos();
+	auto imgSize = ImGui::GetItemRectSize();
+	auto imgMin = glm::vec2(guiPos.x, guiPos.y - imgSize.y);
+	auto imgMax = imgMin + glm::vec2(imgSize.x, imgSize.y);
+	glm::vec2 mousePos = { ofGetMouseX(), ofGetMouseY() };
+	glm::vec2 mouseHoverPct = (mousePos - imgMin) / (imgMax - imgMin);
 
-#endif
+	ImGui::BeginTooltip();
+
+	// print texture data
+	glm::vec2 texDims{ texture.getWidth(), texture.getHeight() };
+	ImTextureID texId = GetImTextureID(texture.texData.textureID);
+
+	if (!text.empty()) {
+		ImGui::TextWrapped(text.c_str());
+	}
+	std::stringstream ss;
+	ss << "texture id: " << texture.texData.textureID << std::endl
+		<< "dims: " << texDims;
+	ImGui::TextWrapped(ss.str().c_str());
+
+	ofRectangle imgRegion(
+		texDims.x * mouseHoverPct.x - peekSize.x * .5,
+		texDims.y * mouseHoverPct.y - peekSize.y * .5,
+		peekSize.x, peekSize.y);
+	imgRegion.x = std::max(0.f, std::min(texDims.x - peekSize.x, imgRegion.x));
+	imgRegion.y = std::max(0.f, std::min(texDims.y - peekSize.y, imgRegion.y));
+
+	ImVec2 uv0 = ImVec2(imgRegion.x / texDims.x, imgRegion.y / texDims.y);
+	ImVec2 uv1 = ImVec2(imgRegion.getRight() / texDims.x, imgRegion.getBottom() / texDims.y);
+
+	ImGui::Image(texId, ImVec2(peekSize.x, peekSize.y), uv0, uv1, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+
+	ImGui::EndTooltip();
+}
 
 static auto vector_getter = [](void* vec, int idx, const char** out_text)
 {
-    auto& vector = *static_cast<std::vector<std::string>*>(vec);
-    if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
-    *out_text = vector.at(idx).c_str();
-    return true;
+	auto& vector = *static_cast<std::vector<std::string>*>(vec);
+	if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+	*out_text = vector.at(idx).c_str();
+	return true;
 };
 
 bool ofxImGui::VectorCombo(const char* label, int* currIndex, std::vector<std::string>& values)
 {
-    if (values.empty()) { return false; }
-    return ImGui::Combo(label, currIndex, vector_getter,
-                        static_cast<void*>(&values), values.size());
+	if (values.empty()) { return false; }
+	return ImGui::Combo(label, currIndex, vector_getter,
+		static_cast<void*>(&values), values.size());
+}
+bool ofxImGui::VectorCombo(const std::string& label, int* currIndex, const std::vector<std::string>& values)
+{
+	if (values.empty()) { return false; }
+	return ImGui::Combo(label.c_str(), currIndex, vector_getter,
+		static_cast<void*>(const_cast<std::vector<std::string>*>(&values)), values.size());
 }
 
 bool ofxImGui::VectorListBox(const char* label, int* currIndex, std::vector<std::string>& values)
 {
-    if (values.empty()) { return false; }
-    return ImGui::ListBox(label, currIndex, vector_getter,
-                   static_cast<void*>(&values), values.size());
+	if (values.empty()) { return false; }
+	return ImGui::ListBox(label, currIndex, vector_getter,
+		static_cast<void*>(&values), values.size());
+}
+bool ofxImGui::VectorListBox(const std::string& label, int* currIndex, const std::vector<std::string>& values)
+{
+	if (values.empty()) { return false; }
+	return ImGui::ListBox(label.c_str(), currIndex, vector_getter,
+		static_cast<void*>(const_cast<std::vector<std::string>*>(&values)), values.size());
 }
 

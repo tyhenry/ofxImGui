@@ -9,14 +9,16 @@
 
 static const int kImGuiMargin = 10;
 
-
-
+#define OFXIMGUI_GLM	OF_VERSION_MAJOR >= 1 || OF_VERSION_MINOR >= 10
 
 namespace ofxImGui
 {
     
     bool VectorCombo(const char* label, int* currIndex, std::vector<std::string>& values);
+	bool VectorCombo(const std::string& label, int* currIndex, const std::vector<std::string>& values);
+
     bool VectorListBox(const char* label, int* currIndex, std::vector<std::string>& values);
+	bool VectorListBox(const std::string& label, int* currIndex, const std::vector<std::string>& values);
 
     
 	struct WindowOpen
@@ -59,9 +61,9 @@ namespace ofxImGui
 	bool BeginTree(const std::string& name, Settings& settings);
 	void EndTree(Settings& settings);
 
-	void AddGroup(ofParameterGroup& group, Settings& settings);
+	void AddGroup(ofParameterGroup& group, Settings& settings, std::function<bool(std::shared_ptr<ofAbstractParameter>)> customParamCallback = nullptr);
 
-#if OF_VERSION_MINOR >= 10
+#if OFXIMGUI_GLM
 	bool AddParameter(ofParameter<glm::ivec2>& parameter);
 	bool AddParameter(ofParameter<glm::ivec3>& parameter);
 	bool AddParameter(ofParameter<glm::ivec4>& parameter);
@@ -95,13 +97,13 @@ namespace ofxImGui
 
 	bool AddRange(const std::string& name, ofParameter<int>& parameterMin, ofParameter<int>& parameterMax, int speed = 1);
 	bool AddRange(const std::string& name, ofParameter<float>& parameterMin, ofParameter<float>& parameterMax, float speed = 0.01f);
-#if OF_VERSION_MINOR >= 10
+#if OFXIMGUI_GLM
 	bool AddRange(const std::string& name, ofParameter<glm::vec2>& parameterMin, ofParameter<glm::vec2>& parameterMax, float speed = 0.01f);
 	bool AddRange(const std::string& name, ofParameter<glm::vec3>& parameterMin, ofParameter<glm::vec3>& parameterMax, float speed = 0.01f);
 	bool AddRange(const std::string& name, ofParameter<glm::vec4>& parameterMin, ofParameter<glm::vec4>& parameterMax, float speed = 0.01f);
 #endif
 
-#if OF_VERSION_MINOR >= 10
+#if OFXIMGUI_GLM
 	bool AddValues(const std::string& name, std::vector<glm::ivec2>& values, int minValue = 0, int maxValue = 0);
 	bool AddValues(const std::string& name, std::vector<glm::ivec3>& values, int minValue = 0, int maxValue = 0);
 	bool AddValues(const std::string& name, std::vector<glm::ivec4>& values, int minValue = 0, int maxValue = 0);
@@ -118,12 +120,10 @@ namespace ofxImGui
 	template<typename DataType>
 	bool AddValues(const std::string& name, std::vector<DataType>& values, DataType minValue, DataType maxValue);
 
-	void AddImage(const ofBaseHasTexture& hasTexture, const ofVec2f& size);
-	void AddImage(const ofTexture& texture, const ofVec2f& size);
-#if OF_VERSION_MINOR >= 10
-    void AddImage(const ofBaseHasTexture& hasTexture, const glm::vec2& size);
-    void AddImage(const ofTexture& texture, const glm::vec2& size);
-#endif
+	bool AddImage(const ofBaseHasTexture& hasTexture, const ofDefaultVec2& size);
+	bool AddImage(const ofTexture& texture, const ofDefaultVec2& size);
+	void AddImageTooltip(const ofTexture& texture, const std::string& text = "", const ofDefaultVec2& peekSize = { 200.f,200.f }, float peekScale = 1.f);
+
 }
 
 static ImTextureID GetImTextureID(const ofTexture& texture)
