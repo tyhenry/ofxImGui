@@ -29,7 +29,7 @@ void MyTheme::setup()
     style->Colors[ImGuiCol_Text] = ImVec4(getRandomColor(), 1.00f);
     style->Colors[ImGuiCol_TextDisabled] = ImVec4(getRandomColor(), 0.58f);
     style->Colors[ImGuiCol_WindowBg] = ImVec4(getRandomColor(), 0.70f);
-    style->Colors[ImGuiCol_ChildWindowBg] = ImVec4(getRandomColor(), 0.58f);
+    style->Colors[ImGuiCol_ChildBg] = ImVec4(getRandomColor(), 0.58f);
     style->Colors[ImGuiCol_Border] = ImVec4(getRandomColor(), 0.00f);
     style->Colors[ImGuiCol_BorderShadow] = ImVec4(getRandomColor(), 0.00f);
     style->Colors[ImGuiCol_FrameBg] = ImVec4(getRandomColor(), 1.00f);
